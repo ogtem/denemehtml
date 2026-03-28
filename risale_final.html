@@ -61,8 +61,8 @@ p.ar-block{font-family:"Amiri","Scheherazade New","Traditional Arabic",serif;fon
 span.ar{font-family:"Amiri","Scheherazade New","Traditional Arabic",serif;font-size:1.1em;unicode-bidi:embed}
 mark{background:var(--mark-bg);color:var(--text);border-radius:2px;padding:0 1px}
 mark.current-result{background:var(--mark-current);outline:2px solid var(--accent);outline-offset:1px}
-@media(max-width:850px){aside{display:none}.book-content{padding:32px 24px 80px}.icon-btn{width:44px;height:44px;font-size:1.15rem}.search-wrap{max-width:180px}}
-@media(min-width:851px){.toc-toggle{display:none!important}.toc-drawer{display:none!important}}
+@media(max-width:700px){aside{display:none}.book-content{padding:32px 18px 60px}}
+@media(min-width:701px){.toc-toggle{display:none!important}.toc-drawer{display:none!important}}
 </style>
 </head>
 <body>
@@ -246,6 +246,15 @@ mark.current-result{background:var(--mark-current);outline:2px solid var(--accen
   </aside>
   <main id="reader">
     <div class="book-content">
+<p>ŞÂFİÎ CEP İLMİHÂLİ</p>
+<p>VE</p>
+<p>TAM NAMAZ HOCASI</p>
+<p>Gülmehmet ÖGTEM</p>
+<p>ŞÂFİÎ CEP İLMİHÂLİ VE TAM NAMAZ HOCASIGülmehmet ÖGTEMŞÂFİÎ CEP İLMİHÂLİ VE TAM NAMAZ HOCASIGülmehmet ÖGTEMŞÂFİÎ CEP İLMİHÂLİ VE TAM NAMAZ HOCASIGülmehmet ÖGTEMŞÂFİÎ CEP İLMİHÂLİ VE TAM NAMAZ HOCASIGülmehmet ÖGTEM</p>
+<p>ŞÂFİÎ CEP İLMİHÂLİ</p>
+<p>VE</p>
+<p>TAM NAMAZ HOCASI</p>
+<p>Gülmehmet ÖGTEM</p>
 <p>ŞÂFİÎ CEP İLMİHÂLİ</p>
 <p>VE</p>
 <p>TAM NAMAZ HOCASI</p>
@@ -1412,7 +1421,6 @@ mark.current-result{background:var(--mark-current);outline:2px solid var(--accen
   var input=document.getElementById("searchInput");
   var countEl=document.getElementById("searchCount");
   var nextBtn=document.getElementById("nextBtn");
-  var searchTimeout=null;
   var prevBtn=document.getElementById("prevBtn");
   var darkBtn=document.getElementById("darkBtn");
   var tocToggle=document.getElementById("tocToggle");
@@ -1435,31 +1443,23 @@ mark.current-result{background:var(--mark-current);outline:2px solid var(--accen
   if(savedPos) setTimeout(function(){reader.scrollTop=parseInt(savedPos,10);},80);
 
   var saveTimer=null;
-  var scrollTimer=null;
   reader.addEventListener("scroll",function(){
     clearTimeout(saveTimer);
     saveTimer=setTimeout(function(){localStorage.setItem("readPos",Math.round(reader.scrollTop));},400);
-    
     var total=reader.scrollHeight-reader.clientHeight;
     if(total>0) bar.style.width=(reader.scrollTop/total*100)+"%";
-
-    if(!scrollTimer){
-      scrollTimer=setTimeout(function(){
-        var cur="";
-        headings.forEach(function(h){if(reader.scrollTop>=h.offsetTop-200) cur=h.id;});
-        navLinks.forEach(function(l){
-          var id=(l.getAttribute("href")||"").replace("#","");
-          l.classList.toggle("active",id===cur);
-        });
-        var al=document.querySelector("aside a.active");
-        if(al){
-          var aside=document.querySelector("aside");
-          var lt=al.offsetTop,lb=lt+al.offsetHeight,vt=aside.scrollTop,vb=vt+aside.clientHeight;
-          if(lt<vt+40) aside.scrollTop=lt-40;
-          else if(lb>vb-40) aside.scrollTop=lb-aside.clientHeight+40;
-        }
-        scrollTimer=null;
-      }, 100);
+    var cur="";
+    headings.forEach(function(h){if(reader.scrollTop>=h.offsetTop-140) cur=h.id;});
+    navLinks.forEach(function(l){
+      var id=(l.getAttribute("href")||"").replace("#","");
+      l.classList.toggle("active",id===cur);
+    });
+    var al=document.querySelector("aside a.active");
+    if(al){
+      var aside=document.querySelector("aside");
+      var lt=al.offsetTop,lb=lt+al.offsetHeight,vt=aside.scrollTop,vb=vt+aside.clientHeight;
+      if(lt<vt+40) aside.scrollTop=lt-40;
+      else if(lb>vb-40) aside.scrollTop=lb-aside.clientHeight+40;
     }
   });
 
@@ -1467,17 +1467,7 @@ mark.current-result{background:var(--mark-current);outline:2px solid var(--accen
     l.addEventListener("click",function(e){
       e.preventDefault();
       var t=document.querySelector(l.getAttribute("href"));
-      if(t) {
-        // Handle offset for fixed header
-        var headerOffset = 80;
-        var elementPosition = t.getBoundingClientRect().top;
-        var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-        
-        document.querySelector("main").scrollTo({
-             top: offsetPosition,
-             behavior: "smooth"
-        });
-      }
+      if(t) t.scrollIntoView({behavior:"smooth"});
       tocDrawer.classList.remove("open");
     });
   });
@@ -1497,20 +1487,17 @@ mark.current-result{background:var(--mark-current);outline:2px solid var(--accen
   function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}
 
   input.addEventListener("input",function(){
-    clearTimeout(searchTimeout);
-    searchTimeout=setTimeout(function(){
-      clearMarks();
-      var term=input.value.trim();
-      if(term.length<2) return;
-      var re=new RegExp("("+esc(term)+")","gi");
-      document.querySelectorAll("[data-si]").forEach(function(el){
-        var o=originals[el.dataset.si];
-        if(re.test(o)){el.innerHTML=o.replace(re,"<mark>$1</mark>");}
-        re.lastIndex=0;
-      });
-      results=Array.from(document.querySelectorAll("mark"));
-      if(results.length>0) goTo(0); else countEl.textContent="0";
-    }, 400); // debounce added
+    clearMarks();
+    var term=input.value.trim();
+    if(term.length<2) return;
+    var re=new RegExp("("+esc(term)+")","gi");
+    document.querySelectorAll("[data-si]").forEach(function(el){
+      var o=originals[el.dataset.si];
+      if(re.test(o)){el.innerHTML=o.replace(re,"<mark>$1</mark>");}
+      re.lastIndex=0;
+    });
+    results=Array.from(document.querySelectorAll("mark"));
+    if(results.length>0) goTo(0); else countEl.textContent="0";
   });
 
   function goTo(n){
@@ -1518,17 +1505,7 @@ mark.current-result{background:var(--mark-current);outline:2px solid var(--accen
     if(idx>=0&&idx<results.length) results[idx].classList.remove("current-result");
     idx=(n+results.length)%results.length;
     results[idx].classList.add("current-result");
-    
-    // Add offset for fixed header
-    var headerOffset = 80;
-    var elementPosition = results[idx].getBoundingClientRect().top;
-    var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-    
-    document.querySelector("main").scrollTo({
-         top: offsetPosition,
-         behavior: "smooth"
-    });
-    
+    results[idx].scrollIntoView({behavior:"smooth",block:"center"});
     countEl.textContent=(idx+1)+"/"+results.length;
   }
 
